@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.usts.dao.IUserDao">
+    <!--列出用户信息-->
+    <select id="listUser" resultType="Users">
+        SELECT * FROM users
+    </select>
+    <!--根据用户名密码查找用户信息-->
+    <select id="selectUser" parameterType="Users" resultType="Users">
+        SELECT * FROM users where
+          <if test="username!=null">
+              username = #{username}
+          </if>
+    </select>
+
+    <!--新增用户-->
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="username!=null">
+                username,
+            </if>
+            <if test="password!=null">
+                password,
+            </if>
+            <if test="menu!=null">
+                menu,
+            </if>
+            <if test="role!=null">
+                role,
+            </if>
+        </trim>
+    </sql>
+    <sql id="value">
+        <trim suffixOverrides=",">
+            <if test="username!=null">
+                #{username},
+            </if>
+            <if test="password!=null">
+                #{password},
+            </if>
+            <if test="menu!=null">
+                #{menu},
+            </if>
+            <if test="role!=null">
+                #{role},
+            </if>
+        </trim>
+    </sql>
+    <insert id="addUser" parameterType="Users">
+        INSERT INTO users(<include refid="key"/>)
+        values (<include refid="value"/>)
+    </insert>
+    <!--修改用户信息：密码、menu、权限-->
+    <update id="updateUser" parameterType="Users">
+        UPDATE users
+        <set>
+            <if test="password!=null">
+                password = #{password},
+            </if>
+            <if test="menu!=null">
+                menu = #{menu},
+            </if>
+            <if test="role!=null">
+                role = #{role}
+            </if>
+        </set>
+        where username = #{username}
+    </update>
+
+    <!--删除用户-->
+    <delete id="deleteUser" parameterType="Users">
+        delete from users where username = #{username} and password = #{password}
+    </delete>
+</mapper>

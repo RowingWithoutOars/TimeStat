@@ -21,4 +21,6 @@ public interface IGrindDao {
     // 查询当前设备总的工作时间
     public int selectAllWorkHour(QueryRo queryRo);
     public List<Grinding_Wheel> selectWheelPage(Map map);
+
+    public Integer selectTotal(QueryRo queryRo);
 }

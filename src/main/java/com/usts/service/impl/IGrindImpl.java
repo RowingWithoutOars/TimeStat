@@ -54,4 +54,9 @@ public class IGrindImpl implements IGrindService {
     public List<Grinding_Wheel> selectWheelPage(Map map) {
         return grindDao.selectWheelPage(map);
     }
+
+    @Override
+    public Integer selectTotal(QueryRo queryRo) {
+        return grindDao.selectTotal(queryRo);
+    }
 }

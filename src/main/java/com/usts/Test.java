@@ -91,15 +91,19 @@ public class Test {
 
     public void searchPage(){
         Map paramap = new HashMap();
-//        paramap.put("date",null);
+        paramap.put("date","2019-4-01");
         paramap.put("startTime",TimeFormat.strToDate("2019-04-01").toLocaleString().split(" ")[0]);
         paramap.put("endTime",TimeFormat.getNextDate("2019-04-01").toLocaleString().split(" ")[0]);
-//        paramap.put("hour",22);
+        paramap.put("hour",1);
         int type=1;
         paramap.put("page",1);
         paramap.put("pageSize",10);
         paramap.put("table_name",TypeConvertTableName.getTable_Name(type));
         List<Grinding_Wheel> wheels = grindDao.selectWheelPage(paramap);
+        QueryRo queryRo = new QueryRo();
+        queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
+        int total = grindDao.selectTotal(queryRo);
+        System.out.println("================"+total);
         for (Grinding_Wheel wheel:wheels){
             System.out.println("==============="+wheel);
         }
@@ -154,12 +158,12 @@ public class Test {
         QueryRo queryRo = new QueryRo();
         int type = 1;
         queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
-        String startTime = "2019-4-2 00:00:00";
-        String endTime = "2019-4-3 00:00:00";
+        String startTime = "2019-3-31 00:00:00";
+        String endTime = "2019-4-1 00:00:00";
         queryRo.setStartTime(startTime);
         queryRo.setEndTime(endTime);
         List<Grinding_Wheel> wheels = grindDao.slectWheelStatus(queryRo);
-        Grinding_Wheel wheel = GrindUtil.getHourWorkig(wheels,0);
+        Grinding_Wheel wheel = GrindUtil.getHourWorkig(wheels,17);
         System.out.println(wheel.toString());
     }
 

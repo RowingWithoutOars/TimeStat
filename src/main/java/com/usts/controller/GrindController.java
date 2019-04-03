@@ -314,32 +314,43 @@ public class GrindController {
         DataResult dataResult = new DataResult();
         List info = new ArrayList();
         Map paramap = new HashMap();
+        QueryRo queryRo = new QueryRo();
         try {
-        String startTime = null;
-        String hour = null;
-        if(map.get("date")!=null&&map.get("date").toString().trim().length()>0){
-            startTime = map.get("date").toString();//
-            paramap.put("startTime", TimeFormat.strToDate(startTime).toLocaleString().split(" ")[0]);
-            paramap.put("endTime", TimeFormat.getNextDate(startTime).toLocaleString().split(" ")[0]);
-        }else{
-            paramap.put("startTime",null);
-        }
-        if (map.get("hour")!=null&&map.get("hour").toString().trim().length()>0){
-            hour=map.get("hour").toString();
-        }
-        int type=Integer.parseInt(map.get("type").toString());
-        int page = Integer.parseInt(map.get("page").toString());
-        int pageSize = Integer.parseInt(map.get("pageSize").toString());
+            String startTime = null;
+            String hour = null;
+            if(map.get("date")!=null&&map.get("date").toString().trim().length()>0){
+                startTime = map.get("date").toString();//
+                paramap.put("startTime", TimeFormat.strToDate(startTime).toLocaleString().split(" ")[0]);
+                paramap.put("endTime", TimeFormat.getNextDate(startTime).toLocaleString().split(" ")[0]);
+            }else{
+                paramap.put("startTime",null);
+            }
+            if (map.get("hour")!=null&&map.get("hour").toString().trim().length()>0){
+                hour=map.get("hour").toString();
+            }
+            int type=Integer.parseInt(map.get("type").toString());
+            int page = Integer.parseInt(map.get("page").toString());
+            int pageSize = Integer.parseInt(map.get("pageSize").toString());
             paramap.put("hour", hour);
             paramap.put("page", page);
             paramap.put("pageSize", pageSize);
             paramap.put("table_name", TypeConvertTableName.getTable_Name(type));
+            queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             List<Grinding_Wheel> wheels = grindService.selectWheelPage(paramap);
             for (Grinding_Wheel wheel : wheels) {
                 info.add(wheel);
             }
+            queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
+            int total = grindService.selectTotal(queryRo);
+            System.out.println("================"+total);
+            for (Grinding_Wheel wheel:wheels){
+                System.out.println("==============="+wheel);
+            }
+            Map infoMap = new HashMap();
+            infoMap.put("list",info);
+            infoMap.put("total",total);
             dataResult.setCode(200);
-            dataResult.setData(info);
+            dataResult.setData(infoMap);
         }catch (Exception e){
             dataResult.setCode(500);
             dataResult.setMsg(e.toString());

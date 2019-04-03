@@ -31,4 +31,6 @@ public interface IGrindService {
     public List<Grinding_Wheel> slectWheelStatus(QueryRo queryRo);
 
     public List<Grinding_Wheel> selectWheelPage(Map map);
+
+    public Integer selectTotal(QueryRo queryRo);
 }

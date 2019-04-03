@@ -42,5 +42,9 @@
           </if>
           limit ${(page-1)*pageSize},${pageSize}
     </select>
+
+    <select id="selectTotal" parameterType="QueryRo" resultType="int">
+        SELECT count(*) from ${table_name}
+    </select>
     
 </mapper>

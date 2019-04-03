@@ -17,7 +17,7 @@ public class TestController {
     @ResponseBody
     public Map selectFood() {
         Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("test","HelloWorld");
+        returnMap.put("test","HelloWorld Version1.4");
         return  returnMap;
     }
 }

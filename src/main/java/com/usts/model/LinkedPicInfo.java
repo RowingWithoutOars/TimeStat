@@ -3,8 +3,8 @@ package com.usts.model;
 import java.util.ArrayList;
 
 public class LinkedPicInfo {
-    private ArrayList<Object> x = new ArrayList<>();
-    private ArrayList<Object> y = new ArrayList<>();
+    private ArrayList<Object> x = new ArrayList<Object>();
+    private ArrayList<Object> y = new ArrayList<Object>();
 
     public LinkedPicInfo() {
     }

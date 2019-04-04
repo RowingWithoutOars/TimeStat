@@ -4,6 +4,7 @@ import com.usts.model.DataResult;
 import com.usts.model.Users;
 import com.usts.service.IUserService;
 import com.usts.utils.MapConvertObject;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +41,9 @@ public class UserController {
                 dataResult.setCode(500);
                 dataResult.setMsg("用户名或者密码错误");
             }
-        }catch (Exception e){
+        }catch (MyBatisSystemException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -66,9 +68,9 @@ public class UserController {
                 dataResult.setMsg("用户名已经存在");
                 dataResult.setData(false);
             }
-        }catch (Exception e){
+        }catch (MyBatisSystemException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("数据库连接异常");
             dataResult.setData(false);
         }
         return dataResult;

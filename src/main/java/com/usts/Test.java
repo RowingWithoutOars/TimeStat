@@ -2,10 +2,8 @@ package com.usts;
 
 import com.usts.dao.IGrindDao;
 import com.usts.dao.IUserDao;
-import com.usts.model.Grinding_Wheel;
-import com.usts.model.QueryRo;
-import com.usts.model.Tuple;
-import com.usts.model.Users;
+import com.usts.model.*;
+import com.usts.service.IGrindService;
 import com.usts.utils.GrindUtil;
 import com.usts.utils.TimeFormat;
 import com.usts.utils.TypeConvertTableName;
@@ -45,8 +43,8 @@ public class Test {
     public void testGrindFun() throws ParseException {
 //        add();
 //        xuqiu2();
-        xuqiu3();
-//        Histogram();
+//        xuqiu3();
+        Histogram();
 //        xuqiu5();
 //        searchPage();
 //        xuqiu6();
@@ -132,6 +130,8 @@ public class Test {
             System.out.println(date+"\t"+tupleHashMap.get(date));
         }
     }
+    @Autowired
+    private IGrindService grindService;
 
     public void xuqiu3(){
         QueryRo queryRo = new QueryRo();
@@ -140,14 +140,7 @@ public class Test {
         HashMap<String,Integer> allTime = new LinkedHashMap<>();
         HashMap<String,Integer> dayTime = new LinkedHashMap<>();
         Map<String,List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
-        for(String name:table_name){
-            System.out.println("==========================="+name);
-            queryRo.setTable_name(name);// 设置表名
-            status_new.put(name,grindDao.selectStatusLastF(queryRo));
-            status.put(name,grindDao.selectStatusNew(queryRo));
-            allTime.put(name,grindDao.selectAllWorkHour(queryRo));
-            dayTime.put(name,grindDao.selectDayWorkHour(queryRo));
-        }
+        HashMap info = new HashMap();
 
         for(String key:status.keySet()){//输出八个设备的当前工作状态
             System.out.println(status.get(key).getDstating()+"\t"+GrindUtil.isWorkingOff(status_new.get(key)));
@@ -174,7 +167,7 @@ public class Test {
         int type = 1;
         queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
         String startTime = "2019-4-1";
-        String endTime = "2019-4-3";
+        String endTime = "2019-4-5";
         queryRo.setStartTime(startTime);
         queryRo.setEndTime(endTime);
         List<Grinding_Wheel> lis = grindDao.slectWheelStatus(queryRo);

@@ -12,9 +12,9 @@ import java.util.*;
 
 @Service
 public class IGrindImpl implements IGrindService {
+    Map<Integer,Map<Integer,Grinding_Wheel>> cacheAllWorkMap = new LinkedHashMap<>();
 
     //所有的工作时间
-    Map<Integer,Map<Integer,Grinding_Wheel>> cacheAllWorkMap = new LinkedHashMap<>();
 
     Map<Integer,Map<Integer,Grinding_Wheel>> cacheDayWorkMap = new LinkedHashMap<>();
 
@@ -75,6 +75,15 @@ public class IGrindImpl implements IGrindService {
     public int selectDayWorkHour_Hour_MuchRecords(QueryRo queryRo) {
         List<Grinding_Wheel> wheels = grindDao.selectDayWorkHour_Hour_MuchRecords(queryRo);
         return GrindUtil.getDayWorking_HourMuchRecords(wheels);
+    }
+
+    public Grinding_Wheel selectDayWorkStatus_Hour_MuchRecords(QueryRo queryRo){
+        List<Grinding_Wheel> wheels = grindDao.selectDayWorkHour_Hour_MuchRecords(queryRo);
+        Grinding_Wheel wheel = new Grinding_Wheel();
+        if (wheels.isEmpty()&&wheels.size()>0){
+            wheel = wheels.get(wheels.size()-1);
+        }
+        return wheel;
     }
 
     // 获取总的工作时间

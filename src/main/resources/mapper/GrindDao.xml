@@ -3,6 +3,7 @@
 
 <!-- 设置为IUserDao接口方法提供sql语句配置 -->
 <mapper namespace="com.usts.dao.IGrindDao">
+    <!--测试使用数据接口-->
     <insert id="addRecord" parameterType="Grinding_Wheel">
         insert into grinding_wheel_a(dtime,dnum,dhour,dworkinghour,dstating)
         values (#{dtime},#{dnum},#{dhour},#{dworkinghour},#{dstating})

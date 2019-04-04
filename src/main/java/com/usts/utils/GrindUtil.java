@@ -198,6 +198,11 @@ public class GrindUtil {
         return dayShiftNight;
     }
 
+    public static List<Grinding_Wheel> reverse(List wheels){
+        Collections.reverse(wheels);
+        return wheels;
+    }
+
     public static List<Grinding_Wheel> pageSearch(List<Grinding_Wheel> wheels,int page,int pageSize){
         wheels = removeDuplicate(wheels);
         List<Grinding_Wheel> records = new ArrayList<>();

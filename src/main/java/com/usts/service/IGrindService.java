@@ -36,5 +36,7 @@ public interface IGrindService {
 
     public int selectDayWorkHour_Hour_MuchRecords(QueryRo queryRo);
 
+    public Grinding_Wheel selectDayWorkStatus_Hour_MuchRecords(QueryRo queryRo);
+
     public int selectAllWorkHour_Hour_MuchRecords(QueryRo queryRo);
 }

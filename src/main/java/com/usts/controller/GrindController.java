@@ -7,6 +7,7 @@ import com.usts.utils.GrindUtil;
 import com.usts.utils.TimeFormat;
 import com.usts.utils.TypeConvertTableName;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,9 +44,12 @@ public class GrindController {
             List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
             dataResult.setData(GrindUtil.getHourWorkig_HourMuchRecords(wheels,hour));
             dataResult.setCode(200);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -68,7 +72,8 @@ public class GrindController {
             for (String name : table_name) {
                 queryRo.setTable_name(name);// 设置表名
                 status_new.put(name,grindService.selectStatusLastF(queryRo));
-                status.put(name, grindService.selectStatusNew(queryRo));
+                Grinding_Wheel status_New = grindService.selectDayWorkStatus_Hour_MuchRecords(queryRo);
+                status.put(name, status_New);
                 allTime.put(name, grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
                 dayTime.put(name, grindService.selectDayWorkHour_Hour_MuchRecords(queryRo));
             }
@@ -82,9 +87,12 @@ public class GrindController {
             }
             dataResult.setData(info);
             dataResult.setCode(200);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -114,9 +122,12 @@ public class GrindController {
             }
             dataResult.setData(picInfo);
             dataResult.setCode(200);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -144,9 +155,12 @@ public class GrindController {
             }
             dataResult.setData(picInfo);
             dataResult.setCode(200);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -186,12 +200,12 @@ public class GrindController {
             }
             dataResult.setData(picinfo);
             dataResult.setCode(200);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            picinfo.add(new Tuple("白班",0));
-            picinfo.add(new Tuple("晚班",0));
-            dataResult.setMsg(e.toString());
-            dataResult.setData(picinfo);
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
@@ -268,27 +282,32 @@ public class GrindController {
             paramap.put("table_name", TypeConvertTableName.getTable_Name(type));
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             List<Grinding_Wheel> wheels = grindService.selectWheelPage(paramap);
-            System.out.println("===="+wheels.size());
+//            System.out.println("===="+wheels);
+            wheels = GrindUtil.reverse(wheels);
+//            System.out.println("===="+wheels);
             List<Grinding_Wheel> wheels1 = GrindUtil.pageSearch(wheels,page,pageSize);
-            for (Grinding_Wheel wheel:wheels1){
-                System.out.println("==============="+wheel);
-            }
+//            for (Grinding_Wheel wheel:wheels1){
+//                System.out.println("==============="+wheel);
+//            }
             for (Grinding_Wheel wheel : wheels1) {
                 info.add(wheel);
             }
             int total = wheels.size();
-            System.out.println("================"+total);
-            for (Grinding_Wheel wheel:wheels){
-                System.out.println("==============="+wheel);
-            }
+//            System.out.println("================"+total);
+//            for (Grinding_Wheel wheel:wheels){
+//                System.out.println("==============="+wheel);
+//            }
             Map infoMap = new HashMap();
             infoMap.put("list",info);
             infoMap.put("total",total);
             dataResult.setCode(200);
             dataResult.setData(infoMap);
-        }catch (Exception e){
+        }catch (NullPointerException e){
             dataResult.setCode(500);
-            dataResult.setMsg(e.toString());
+            dataResult.setMsg("没有查找相关的数据");
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }

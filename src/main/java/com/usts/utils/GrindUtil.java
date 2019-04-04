@@ -22,6 +22,17 @@ public class GrindUtil {
         return info;
     }
 
+    // 获取柱状图信息 dime和dworkighour 同一天的时间要加起来
+    public static LinkedHashMap<String,Integer> getHistogramInfo_HourMuchRecords(List<Grinding_Wheel> list){
+        LinkedHashMap<String,Integer> info = new LinkedHashMap<>();
+        // 要按日期分开
+        HashMap<String,List<Grinding_Wheel>> records = divByDate(list);
+        for (String key:records.keySet()){
+            info.put(key,getDayWorking_HourMuchRecords(records.get(key)));
+        }
+        return info;
+    }
+
     // 统计单个柱状图信息
     public static LinkedHashMap<String,Integer> getHistogramSingleInfo(List<Grinding_Wheel> list){
         LinkedHashMap<String,Integer> info = new LinkedHashMap<>();
@@ -63,6 +74,29 @@ public class GrindUtil {
         return new Tuple(dayShift,nightShift);
     }
 
+    // 统计一天白班和晚班的工作时长
+    public static Tuple getDayShift_HourMuchRecords(List<Grinding_Wheel> list){
+        int dayShift = 0;
+        int nightShift = 0;
+        List<Integer> hours = new ArrayList<>();
+        for (Grinding_Wheel wheel:list){
+            if (hours.indexOf(wheel.getDhour())==-1){
+                //获取一个小时内的最大值
+                Grinding_Wheel va = getHourWorkig_HourMuchRecords(list,wheel.getDhour());
+                if (va.getDtime().getHours()>=8&&
+                        va.getDtime().getHours()<=20){
+                    dayShift += va.getDworkinghour();
+                }else{
+                    nightShift+= va.getDworkinghour();
+                }
+                hours.add(wheel.getDhour());
+            }else {
+                continue;
+            }
+        }
+        return new Tuple(dayShift,nightShift);
+    }
+
     //具体某天某自然小时设备工作了多长时间
     public static Grinding_Wheel getHourWorkig(List<Grinding_Wheel> list,int hour){
         for (Grinding_Wheel wheel:list){
@@ -71,6 +105,48 @@ public class GrindUtil {
             }
         }
         return null;
+    }
+
+    // 过滤得到一天中每个小时的有效信息
+    public static List<Grinding_Wheel> filterDayWorkingHour(List<Grinding_Wheel> list){
+        ArrayList<Grinding_Wheel> records = new ArrayList<>();
+        ArrayList<Integer> hours = new ArrayList<>();
+        for (Grinding_Wheel wheel:list){
+            if (hours.indexOf(wheel.getDhour())==-1){
+                Grinding_Wheel wheel1 = getHourWorkig_HourMuchRecords(list,wheel.getDhour());
+                records.add(wheel1);
+                hours.add(wheel.getDhour());
+            }
+        }
+        return records;
+    }
+
+    //获取一天的在线时长
+    public static Integer getDayWorking_HourMuchRecords(List<Grinding_Wheel> selectResult){
+        int dayHourWorking = 0;
+        List<Integer> hours = new ArrayList<>();
+        for (Grinding_Wheel wheel:selectResult){
+            if(hours.indexOf(wheel.getDhour()) == -1){
+                dayHourWorking += GrindUtil.getHourWorkig_HourMuchRecords(selectResult,wheel.getDhour()).getDworkinghour();
+                hours.add(wheel.getDhour());
+            }else{
+                continue;
+            }
+        }
+        return dayHourWorking;
+    }
+
+    // 对应需求2 一个小时多条纪录取最大值
+    public static Grinding_Wheel getHourWorkig_HourMuchRecords(List<Grinding_Wheel> list,int hour){
+        Grinding_Wheel wheelsMaxWorkingHour = new Grinding_Wheel();
+        for (Grinding_Wheel wheel:list){
+            if (wheel.getDtime().getHours()==hour){
+                if (wheel.getDworkinghour()>=wheelsMaxWorkingHour.getDworkinghour()){
+                    wheelsMaxWorkingHour = wheel;
+                }
+            }
+        }
+        return wheelsMaxWorkingHour;
     }
 
     // 传入一个时间点，转化为时间段
@@ -120,5 +196,47 @@ public class GrindUtil {
             dayShiftNight.add(new Tuple(key+"晚班",GrindUtil.converToHour(Integer.parseInt(tmp.getValue().toString()))));
         }
         return dayShiftNight;
+    }
+
+    public static List<Grinding_Wheel> pageSearch(List<Grinding_Wheel> wheels,int page,int pageSize){
+        wheels = removeDuplicate(wheels);
+        List<Grinding_Wheel> records = new ArrayList<>();
+        if (wheels!=null){
+            int size = wheels.size();
+            if(size>page*pageSize) {
+                records = wheels.subList((page-1)* pageSize, page* pageSize);
+            }
+            else if(size<=page*pageSize&&size>(page-1) * pageSize){
+                records = wheels.subList((page-1) * pageSize, size);
+            }else{
+                return wheels;
+            }
+        }
+        return records;
+    }
+
+    public static List removeDuplicate(List list) {
+        HashSet h = new LinkedHashSet(list);
+        list.clear();
+        list.addAll(h);
+        return list;
+    }
+
+    public static int isWorkingOff(List<Grinding_Wheel> wheels){
+        if (wheels.isEmpty()){
+            return 1;
+        }
+        boolean flag = true;
+        for(int i =0;i<wheels.size()-1;i++){
+            if (wheels.get(i).getDworkinghour()!=wheels.get(i+1).getDworkinghour()){
+             flag = false;
+             break;
+         }
+        }
+        if (flag==false){
+            return 0;
+        }else {
+            return 1;
+        }
     }
 }

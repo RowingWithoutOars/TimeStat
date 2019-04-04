@@ -22,15 +22,19 @@ public interface IGrindService {
     // 查询最后一条纪录，需要传表名
     public Grinding_Wheel selectStatusNew(QueryRo queryRo);
 
+    public List<Grinding_Wheel> selectStatusLastF(QueryRo queryRo);
+
     // 查询当天的纪录
     public List<Grinding_Wheel> selectOnDay(QueryRo queryRo);
-
-
 
     // 柱状图时间统计
     public List<Grinding_Wheel> slectWheelStatus(QueryRo queryRo);
 
     public List<Grinding_Wheel> selectWheelPage(Map map);
 
-    public Integer selectTotal(QueryRo queryRo);
+    public Integer selectTotal(Map map);
+
+    public int selectDayWorkHour_Hour_MuchRecords(QueryRo queryRo);
+
+    public int selectAllWorkHour_Hour_MuchRecords(QueryRo queryRo);
 }

@@ -5,7 +5,7 @@ public class Users {
     private String username;
     private String password;
     private String menu;
-    private int role = 1;// 默认1 为普通用户
+    private int role;// 默认1 为普通用户
 
     public Users() {
     }

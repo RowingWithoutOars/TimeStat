@@ -28,4 +28,10 @@ public class TimeFormat {
         Date end_Time = c.getTime();
         return end_Time;
     }
+
+    //得到下一天，字符串形式
+    public static String getNextDateStr(String startTime){
+        Date nextDate = getNextDate(startTime);
+        return nextDate.toLocaleString().split(" ")[0];
+    }
 }

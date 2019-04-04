@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -29,9 +30,10 @@ public class UserController {
 
         Users users = MapConvertObject.mapConverTUser(map);
         try {
-            users = this.userService.selectUser(users);
-            if (users!=null){
-                dataResult.setData(users);
+            Users tmp = this.userService.selectUser(users);
+            if (tmp!=null&&users.getUsername().equals(tmp.getUsername())&&
+                    users.getPassword().equals(tmp.getPassword())){
+                dataResult.setData(tmp);
                 dataResult.setCode(200);
             }else{
                 dataResult.setCode(500);
@@ -54,6 +56,7 @@ public class UserController {
         Users utemp = userService.selectUser(users);
         try {
             if (utemp==null){//判断是否存在，不存在时为空，可以增加
+                users.setRole(1);
                 userService.addUser(users);
                 dataResult.setCode(200);
                 dataResult.setData(true);
@@ -110,6 +113,18 @@ public class UserController {
             dataResult.setData(false);
             dataResult.setMsg("删除失败");
         }
+        return dataResult;
+    }
+
+    // 删除用户
+    @RequestMapping(value = "/listUser", produces = "application/json; charset=utf-8")
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @ResponseBody
+    public DataResult listUser(){
+        DataResult dataResult = new DataResult();
+        List<Users> users = userService.listUser();
+        dataResult.setCode(200);
+        dataResult.setData(users);
         return dataResult;
     }
 }

@@ -27,28 +27,22 @@ public class GrindController {
     private IGrindService grindService;
 
     // 对应需求2
-    @RequestMapping(value = "/searchWorkingHour", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/search_WorkingHour", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
     public DataResult searchWorkingHour(@RequestBody Map map) {
-//        Grinding_Wheel wheel = new Grinding_Wheel();
         QueryRo queryRo = new QueryRo();
         DataResult dataResult = new DataResult();
         try {
             int type = Integer.parseInt(map.get("type").toString());// 表
             int hour = Integer.parseInt(map.get("hour").toString());// 小时
             String startTime = map.get("date").toString();// 日期
-//        int type = Integer.parseInt("1");// 表
-//        int hour = Integer.parseInt("2");// 小时
-//        String startTime = "2019-4-1";// 日期
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));//设置表名
             queryRo.setStartTime(startTime);
             queryRo.setEndTime(TimeFormat.getNextDate(startTime).toLocaleString());//设置为一天的
             List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
-            dataResult.setData(GrindUtil.getHourWorkig(wheels,hour));
+            dataResult.setData(GrindUtil.getHourWorkig_HourMuchRecords(wheels,hour));
             dataResult.setCode(200);
-//            throw new Exception("报错信息测试");
-//            System.out.println("========================="+GrindUtil.getHourWorkig(wheels,hour));
         }catch (Exception e){
             dataResult.setCode(500);
             dataResult.setMsg(e.toString());
@@ -57,7 +51,7 @@ public class GrindController {
     }
 
     // 对应需求3
-    @RequestMapping(value = "/searchWorkingStatus", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/search_WorkingStatus", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
     public DataResult searchWorkingStatus(){
@@ -69,15 +63,18 @@ public class GrindController {
             HashMap<String, Grinding_Wheel> status = new LinkedHashMap<>();
             HashMap<String, Integer> allTime = new LinkedHashMap<>();
             HashMap<String, Integer> dayTime = new LinkedHashMap<>();
+            Map<String,List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
+
             for (String name : table_name) {
                 queryRo.setTable_name(name);// 设置表名
+                status_new.put(name,grindService.selectStatusLastF(queryRo));
                 status.put(name, grindService.selectStatusNew(queryRo));
-                allTime.put(name, grindService.selectAllWorkHour(queryRo));
-                dayTime.put(name, grindService.selectDayWorkHour(queryRo));
+                allTime.put(name, grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
+                dayTime.put(name, grindService.selectDayWorkHour_Hour_MuchRecords(queryRo));
             }
             for (String key : status.keySet()) {//输出八个设备的当前工作状态
                 WheelStatus wheelStatus = new WheelStatus();
-                wheelStatus.setStatus(status.get(key).getDstating());// 设备状态
+                wheelStatus.setStatus(GrindUtil.isWorkingOff(status_new.get(key)));// 设备状态
                 wheelStatus.setAll_work(allTime.get(key));// 设备
                 wheelStatus.setCurrent_day_work(dayTime.get(key));
                 wheelStatus.setCurrent_hour_work(status.get(key).getDworkinghour());
@@ -92,42 +89,9 @@ public class GrindController {
         return dataResult;
     }
 
-    //需求4 需要传入时间段
-    @RequestMapping(value = "/serachTimeSlotStatus", produces = "application/json; charset=utf-8")
-    @CrossOrigin(origins = "*", maxAge = 3600)
-    @ResponseBody
-    public Map serachTimeSlotStatus(@RequestBody Map map){
-        Map result = new HashMap();
-        QueryRo queryRo = new QueryRo();
-        int type = Integer.parseInt(map.get("type").toString());// 表
-        String startTime = map.get("start").toString();// 开始时间
-        String endTime = map.get("end").toString(); // 结束时间
-//        int type = 1;
-//        String startTime = "2019-3-31";
-//        String endTime = "2019-4-3";
-        queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
-        queryRo.setStartTime(startTime);
-        queryRo.setEndTime(endTime);
-        List<Grinding_Wheel> lis = grindService.slectWheelStatus(queryRo);// 符合时间段的所有数据库数据
-        HashMap<String,Integer> info = GrindUtil.getHistogramInfo(lis);
-        HashMap<String,Integer> perDayWorkingTime = new LinkedHashMap<>(); // 时间段内每天的工作时间
-        HashMap<String,HashMap<String,Integer>> singleHourWoring = new HashMap<>();//单个小时的数据
-        for(String s : info.keySet()){
-            perDayWorkingTime.put(s,info.get(s));
-        }
-        HashMap<String,List<Grinding_Wheel>> dateInfo = GrindUtil.divByDate(lis);//按照日期将信息分开
-        for (String s:dateInfo.keySet()){
-            HashMap<String,Integer> single = new HashMap<>();
-            single = GrindUtil.getHistogramSingleInfo(dateInfo.get(s));//统计一天的
-            singleHourWoring.put(s,single);//纪录
-        }
-        result.put("data",perDayWorkingTime);
-        result.put("day",singleHourWoring);
-        return result;
-    }
 
     //需求4.1 需要传入时间段 和表名 查询单个的设备工作时间
-    @RequestMapping(value = "/serachDayWorkTime", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/search_DayWorkTime", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
 //    @RequestBody Map map
@@ -136,13 +100,13 @@ public class GrindController {
         QueryRo queryRo = new QueryRo();
         try {
             int type = Integer.parseInt(map.get("type").toString());// 表
-        String startTime = map.get("start").toString();// 开始时间
-        String endTime = map.get("end").toString(); // 结束时间
+            String startTime = map.get("start").toString();// 开始时间
+            String endTime = map.get("end").toString(); // 结束时间
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             queryRo.setStartTime(startTime);
-            queryRo.setEndTime(endTime);
+            queryRo.setEndTime(TimeFormat.getNextDateStr(endTime));
             List<Grinding_Wheel> lis = grindService.slectWheelStatus(queryRo);// 符合时间段的所有数据库数据
-            HashMap<String, Integer> info = GrindUtil.getHistogramInfo(lis);
+            HashMap<String, Integer> info = GrindUtil.getHistogramInfo_HourMuchRecords(lis);
             LinkedPicInfo picInfo = new LinkedPicInfo();
             for (String s : info.keySet()) {
                 picInfo.getX().add(s);
@@ -158,23 +122,21 @@ public class GrindController {
     }
 
     //需求4.2 需要传入时间段 和表名 查询单个的设备一天自然小时的工作时间
-    @RequestMapping(value = "/serachHourWork", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/search_HourWork", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
     public DataResult serachHourWork( @RequestBody Map map){
         DataResult dataResult = new DataResult();
         QueryRo queryRo = new QueryRo();
         try {
-        int type = Integer.parseInt(map.get("type").toString());// 表
-        String startTime = map.get("start").toString();// 开始时间
-//        String endTime = map.get("end").toString(); // 结束时间
-//            int type = 1;
-//            String startTime = "2019-3-31";
+            int type = Integer.parseInt(map.get("type").toString());// 表
+            String startTime = map.get("start").toString();// 开始时间
             String endTime = TimeFormat.getNextDate(startTime).toLocaleString().split(" ")[0];
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             queryRo.setStartTime(startTime);
             queryRo.setEndTime(endTime);
             List<Grinding_Wheel> lis = grindService.slectWheelStatus(queryRo);// 符合时间段的所有数据库数据
+            lis = GrindUtil.filterDayWorkingHour(lis);
             LinkedPicInfo picInfo = new LinkedPicInfo();
             for(Grinding_Wheel wheel:lis){
                 picInfo.getX().add(wheel.getDhour());
@@ -189,68 +151,27 @@ public class GrindController {
         return dataResult;
     }
 
-
-
-    //需求5 传入时间段
-    @RequestMapping(value = "/searchDayShift", produces = "application/json; charset=utf-8")
-    @CrossOrigin(origins = "*", maxAge = 3600)
-    @ResponseBody
-    public Map searchDayShift( @RequestBody Map map){
-        QueryRo queryRo = new QueryRo();
-        String startTime = map.get("start").toString();
-        String endTime = map.get("end").toString();
-//        String startTime = "2019-4-1";
-//        String endTime = "2019-4-3";
-        queryRo.setStartTime(startTime);
-        queryRo.setEndTime(endTime);
-        ArrayList<String> table_name = TypeConvertTableName.getAllTableName();
-        HashMap<String,HashMap<String,Tuple>> tuples = new LinkedHashMap<>();
-        HashMap<String,HashMap<String,List<Grinding_Wheel>>> info = new LinkedHashMap<>();
-        for (String name:table_name){
-            queryRo.setTable_name(name);// 设置表名
-            List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
-            HashMap<String,List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
-            info.put(name,infoChild);
-            HashMap<String,Tuple> tupleHashMap = new LinkedHashMap<>();
-            for(String date:infoChild.keySet()){
-                tupleHashMap.put(date,GrindUtil.getDayShift(wheels));
-            }
-            tuples.put(name,tupleHashMap);
-        }
-        HashMap<String,HashMap<String,Tuple>> records = new HashMap();
-        for (String s:tuples.keySet()){// 第一层是设备名
-            HashMap<String,Tuple> singleWheel = new HashMap<>();
-            for (String date:tuples.get(s).keySet()){// 第二层是日期
-                singleWheel.put(date,tuples.get(s).get(date));
-            }
-            records.put(s,singleWheel);
-        }
-        return records;
-    }
-
     //需求5.1  传入时间段 查询单个设备白班晚班工作时间
-    @RequestMapping(value = "/searchDayShiftByType", produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/search_DayShiftByType", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
     public DataResult searchDayShiftByType(@RequestBody Map map){
         QueryRo queryRo = new QueryRo();
         DataResult dataResult = new DataResult();
+        ArrayList<Tuple> picinfo = new ArrayList<>();
         try {
             int type = Integer.parseInt(map.get("type").toString());
             String startTime = map.get("start").toString();
             String endTime = map.get("end").toString();
-//            int type = 1;
-//            String startTime = "2019-4-1";
-//            String endTime = "2019-4-3";
             queryRo.setStartTime(startTime);
-            queryRo.setEndTime(endTime);
+            queryRo.setEndTime(TimeFormat.getNextDateStr(endTime));
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));// 设置表名
+
             List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
             HashMap<String,List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
-            System.out.println("==========="+wheels.size()+"\t"+infoChild.size());
             HashMap<String,Tuple> tupleHashMap = new LinkedHashMap<>();
             for(String date:infoChild.keySet()){
-                tupleHashMap.put(date,GrindUtil.getDayShift(wheels));
+                tupleHashMap.put(date,GrindUtil.getDayShift_HourMuchRecords(wheels));
             }
             int dayValue = 0;
             int nightValue = 0;
@@ -258,7 +179,6 @@ public class GrindController {
                 dayValue += Integer.parseInt(tupleHashMap.get(key).getName().toString());
                 nightValue += Integer.parseInt(tupleHashMap.get(key).getValue().toString());
             }
-            ArrayList<Tuple> picinfo = new ArrayList<>();
             picinfo.add(new Tuple("白班",dayValue));
             picinfo.add(new Tuple("晚班",nightValue));
             for(String date:tupleHashMap.keySet()){
@@ -268,12 +188,14 @@ public class GrindController {
             dataResult.setCode(200);
         }catch (Exception e){
             dataResult.setCode(500);
+            picinfo.add(new Tuple("白班",0));
+            picinfo.add(new Tuple("晚班",0));
             dataResult.setMsg(e.toString());
+            dataResult.setData(picinfo);
         }
         return dataResult;
     }
 
-    // 需求6
     @RequestMapping(value = "/excel/export")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
@@ -307,7 +229,7 @@ public class GrindController {
     }
 
     // 分页查询
-    @RequestMapping(value = "/searchPage")
+    @RequestMapping(value = "/search_Page")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
     public DataResult searchPage(@RequestBody Map map){
@@ -328,20 +250,33 @@ public class GrindController {
             if (map.get("hour")!=null&&map.get("hour").toString().trim().length()>0){
                 hour=map.get("hour").toString();
             }
-            int type=Integer.parseInt(map.get("type").toString());
-            int page = Integer.parseInt(map.get("page").toString());
-            int pageSize = Integer.parseInt(map.get("pageSize").toString());
+            int type = 1;
+            int page = 0;
+            int pageSize = 0;
+            if(map.get("type")!=null){
+                type =Integer.parseInt(map.get("type").toString());
+            }
+            if (map.get("page")!=null){
+                page = Integer.parseInt(map.get("page").toString());
+            }
+            if (map.get("pageSize")!=null){
+                pageSize = Integer.parseInt(map.get("pageSize").toString());
+            }
             paramap.put("hour", hour);
             paramap.put("page", page);
             paramap.put("pageSize", pageSize);
             paramap.put("table_name", TypeConvertTableName.getTable_Name(type));
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             List<Grinding_Wheel> wheels = grindService.selectWheelPage(paramap);
-            for (Grinding_Wheel wheel : wheels) {
+            System.out.println("===="+wheels.size());
+            List<Grinding_Wheel> wheels1 = GrindUtil.pageSearch(wheels,page,pageSize);
+            for (Grinding_Wheel wheel:wheels1){
+                System.out.println("==============="+wheel);
+            }
+            for (Grinding_Wheel wheel : wheels1) {
                 info.add(wheel);
             }
-            queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
-            int total = grindService.selectTotal(queryRo);
+            int total = wheels.size();
             System.out.println("================"+total);
             for (Grinding_Wheel wheel:wheels){
                 System.out.println("==============="+wheel);
@@ -357,4 +292,5 @@ public class GrindController {
         }
         return dataResult;
     }
+
 }

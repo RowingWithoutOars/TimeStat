@@ -4,14 +4,19 @@ import com.usts.dao.IGrindDao;
 import com.usts.model.Grinding_Wheel;
 import com.usts.model.QueryRo;
 import com.usts.service.IGrindService;
+import com.usts.utils.GrindUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class IGrindImpl implements IGrindService {
+
+    //所有的工作时间
+    Map<Integer,Map<Integer,Grinding_Wheel>> cacheAllWorkMap = new LinkedHashMap<>();
+
+    Map<Integer,Map<Integer,Grinding_Wheel>> cacheDayWorkMap = new LinkedHashMap<>();
 
     @Resource
     private IGrindDao grindDao;
@@ -41,6 +46,11 @@ public class IGrindImpl implements IGrindService {
     }
 
     @Override
+    public List<Grinding_Wheel> selectStatusLastF(QueryRo queryRo) {
+        return grindDao.selectStatusLastF(queryRo);
+    }
+
+    @Override
     public List<Grinding_Wheel> selectOnDay(QueryRo queryRo) {
         return grindDao.selectOnDay(queryRo);
     }
@@ -56,7 +66,29 @@ public class IGrindImpl implements IGrindService {
     }
 
     @Override
-    public Integer selectTotal(QueryRo queryRo) {
-        return grindDao.selectTotal(queryRo);
+    public Integer selectTotal(Map map) {
+        return grindDao.selectTotal(map);
     }
+
+    // 获取一天的工作时间
+    @Override
+    public int selectDayWorkHour_Hour_MuchRecords(QueryRo queryRo) {
+        List<Grinding_Wheel> wheels = grindDao.selectDayWorkHour_Hour_MuchRecords(queryRo);
+        return GrindUtil.getDayWorking_HourMuchRecords(wheels);
+    }
+
+    // 获取总的工作时间
+    @Override
+    public int selectAllWorkHour_Hour_MuchRecords(QueryRo queryRo) {
+        int allHourWorking = 0;
+        List<Grinding_Wheel> selectResult = grindDao.selectAllWorkHour_Hour_MuchRecords(queryRo);
+        //按日期分开
+        HashMap<String,List<Grinding_Wheel>> divByDate = GrindUtil.divByDate(selectResult);
+        for(String key:divByDate.keySet()){
+            // 把每天的加起来
+            allHourWorking+=GrindUtil.getDayWorking_HourMuchRecords(divByDate.get(key));
+        }
+        return allHourWorking;
+    }
+
 }

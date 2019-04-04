@@ -4,7 +4,7 @@
 <!-- 设置为IUserDao接口方法提供sql语句配置 -->
 <mapper namespace="com.usts.dao.IGrindDao">
     <insert id="addRecord" parameterType="Grinding_Wheel">
-        insert into old_line(dtime,dnum,dhour,dworkinghour,dstating)
+        insert into grinding_wheel_a(dtime,dnum,dhour,dworkinghour,dstating)
         values (#{dtime},#{dnum},#{dhour},#{dworkinghour},#{dstating})
     </insert>
 
@@ -22,6 +22,15 @@
         select sum(dworkinghour) from ${table_name}
     </select>
 
+    <!--查询当天的工作时间-->
+    <select id="selectDayWorkHour_Hour_MuchRecords" parameterType="QueryRo" resultType="Grinding_Wheel">
+        select * from ${table_name} where to_days(dtime) = to_days(now())
+    </select>
+    <!--总的工作时间-->
+    <select id="selectAllWorkHour_Hour_MuchRecords" parameterType="QueryRo" resultType="Grinding_Wheel">
+        select * from ${table_name}
+    </select>
+
     <!--柱状图统计-->
     <select id="slectWheelStatus" parameterType="QueryRo" resultType="Grinding_Wheel">
         select * from ${table_name} where
@@ -31,19 +40,22 @@
     <select id="selectStatusNew" parameterType="QueryRo" resultType="Grinding_Wheel">
         select * from ${table_name} order by did DESC limit 1;
     </select>
+    <!--查询最后五条纪录-->
+    <select id="selectStatusLastF" parameterType="QueryRo" resultType="Grinding_Wheel">
+        select * from ${table_name} order by did DESC limit 3;
+    </select>
     <!--分页查询-->
     <select id="selectWheelPage" parameterType="Map" resultType="Grinding_Wheel">
-        SELECT * from ${table_name} where 1=1
+        SELECT distinct dtime,dnum,dhour,dworkinghour,dstating from ${table_name} where 1=1
           <if test="startTime!=null">
              and dtime between #{startTime} and #{endTime}
           </if>
           <if test="hour!=null">
              and dhour = ${hour}
           </if>
-          limit ${(page-1)*pageSize},${pageSize}
     </select>
 
-    <select id="selectTotal" parameterType="QueryRo" resultType="int">
+    <select id="selectTotal" parameterType="Map" resultType="int">
         SELECT count(*) from ${table_name}
     </select>
     

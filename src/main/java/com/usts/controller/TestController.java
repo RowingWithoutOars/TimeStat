@@ -23,7 +23,7 @@ public class TestController {
     @ResponseBody
     public Map test() {
         Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("test","HelloWorld Version1.5");
+        returnMap.put("test","HelloWorld Version1.6");
         return  returnMap;
     }
 
@@ -36,9 +36,7 @@ public class TestController {
     public DataResult testSqlConnectStatus(){
         DataResult dataResult = new DataResult();
         Map map = new HashMap();
-        map.put("type",TypeConvertTableName.getTable_Name(1));
-        map.put("hour","");
-        map.put("startTime","");
+        map.put("table_name",TypeConvertTableName.getTable_Name(1));
         try {
             int i = grindService.selectTotal(map);
             dataResult.setCode(200);

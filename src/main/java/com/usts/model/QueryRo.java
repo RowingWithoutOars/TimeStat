@@ -1,5 +1,7 @@
 package com.usts.model;
 
+import com.usts.utils.TimeFormat;
+
 import java.util.Date;
 
 public class QueryRo {
@@ -34,7 +36,8 @@ public class QueryRo {
     }
 
     public void setEndTime(String endTime) {
-        this.endTime = endTime;
+
+        this.endTime = TimeFormat.getNextDateStr(endTime);
     }
 
     @Override

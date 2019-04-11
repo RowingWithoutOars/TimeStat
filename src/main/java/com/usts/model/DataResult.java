@@ -4,6 +4,7 @@ public class DataResult {
     private Object data = null;
     private String msg = "";
     private Integer code;
+    private String error ="";
 
     public DataResult() {
     }
@@ -36,5 +37,13 @@ public class DataResult {
 
     public void setCode(Integer code) {
         this.code = code;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

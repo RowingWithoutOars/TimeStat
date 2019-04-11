@@ -9,7 +9,7 @@ import java.util.Map;
 public interface IGrindDao {
     public void addRecord(Grinding_Wheel grinding_wheel);
     public int selectWheelWorkHour(QueryRo queryRo);
-    public List<Grinding_Wheel> slectWheelStatus(QueryRo queryRo);
+    public List<Grinding_Wheel> selectTimeWorkHour(QueryRo queryRo);
     // 查询最后一条纪录，需要传表名
     public Grinding_Wheel selectStatusNew(QueryRo queryRo);
 

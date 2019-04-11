@@ -40,14 +40,14 @@ public class GrindController {
             String startTime = map.get("date").toString();// 日期
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));//设置表名
             queryRo.setStartTime(startTime);
-            queryRo.setEndTime(TimeFormat.getNextDate(startTime).toLocaleString());//设置为一天的
-            List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
-            dataResult.setData(GrindUtil.getHourWorkig_HourMuchRecords(wheels,hour));
+            queryRo.setEndTime(startTime);//设置为一天的
+            List<Grinding_Wheel> wheels = grindService.selectTimeWorkHour(queryRo);
+            dataResult.setData(GrindUtil.getHourWorkig_HourMuchRecords(wheels, hour));
             dataResult.setCode(200);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
             dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
@@ -58,20 +58,28 @@ public class GrindController {
     @RequestMapping(value = "/search_WorkingStatus", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
-    public DataResult searchWorkingStatus(){
-        Map<String,WheelStatus> info = new HashMap();
+    public DataResult searchWorkingStatus(@RequestBody Map map) {
+        Map<String, WheelStatus> info = new HashMap();
         QueryRo queryRo = new QueryRo();
         DataResult dataResult = new DataResult();
         try {
+            if (map.get("start") != null && map.get("end") != null) {
+                queryRo.setStartTime(map.get("start").toString());
+                queryRo.setEndTime(map.get("end").toString());
+            } else {
+                dataResult.setCode(500);
+                dataResult.setMsg("请输入正确的时间段");
+                return dataResult;
+            }
             ArrayList<String> table_name = TypeConvertTableName.getAllTableName();
             HashMap<String, Grinding_Wheel> status = new LinkedHashMap<>();
             HashMap<String, Integer> allTime = new LinkedHashMap<>();
             HashMap<String, Integer> dayTime = new LinkedHashMap<>();
-            Map<String,List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
+            Map<String, List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
 
             for (String name : table_name) {
                 queryRo.setTable_name(name);// 设置表名
-                status_new.put(name,grindService.selectStatusLastF(queryRo));
+                status_new.put(name, grindService.selectStatusLastF(queryRo));
                 Grinding_Wheel status_New = grindService.selectDayWorkStatus_Hour_MuchRecords(queryRo);
                 status.put(name, status_New);
                 allTime.put(name, grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
@@ -87,10 +95,11 @@ public class GrindController {
             }
             dataResult.setData(info);
             dataResult.setCode(200);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
-            dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+            dataResult.setMsg("没有找到相关数据");
+            dataResult.setError(e.toString());
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
@@ -103,7 +112,7 @@ public class GrindController {
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
 //    @RequestBody Map map
-    public DataResult serachDayWorkTime(@RequestBody Map map){
+    public DataResult serachDayWorkTime(@RequestBody Map map) {
         DataResult dataResult = new DataResult();
         QueryRo queryRo = new QueryRo();
         try {
@@ -112,8 +121,10 @@ public class GrindController {
             String endTime = map.get("end").toString(); // 结束时间
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             queryRo.setStartTime(startTime);
-            queryRo.setEndTime(TimeFormat.getNextDateStr(endTime));
-            List<Grinding_Wheel> lis = grindService.slectWheelStatus(queryRo);// 符合时间段的所有数据库数据
+            queryRo.setEndTime(endTime);
+            System.out.println("================1"+map.get("end").toString());
+            System.out.println("++++++++++++++"+queryRo);
+            List<Grinding_Wheel> lis = grindService.selectTimeWorkHour(queryRo);// 符合时间段的所有数据库数据
             HashMap<String, Integer> info = GrindUtil.getHistogramInfo_HourMuchRecords(lis);
             LinkedPicInfo picInfo = new LinkedPicInfo();
             for (String s : info.keySet()) {
@@ -122,10 +133,11 @@ public class GrindController {
             }
             dataResult.setData(picInfo);
             dataResult.setCode(200);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
             dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+            dataResult.setError(e.toString());
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
@@ -136,29 +148,30 @@ public class GrindController {
     @RequestMapping(value = "/search_HourWork", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
-    public DataResult serachHourWork( @RequestBody Map map){
+    public DataResult serachHourWork(@RequestBody Map map) {
         DataResult dataResult = new DataResult();
         QueryRo queryRo = new QueryRo();
         try {
             int type = Integer.parseInt(map.get("type").toString());// 表
             String startTime = map.get("start").toString();// 开始时间
-            String endTime = TimeFormat.getNextDate(startTime).toLocaleString().split(" ")[0];
+            String endTime = startTime;
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             queryRo.setStartTime(startTime);
             queryRo.setEndTime(endTime);
-            List<Grinding_Wheel> lis = grindService.slectWheelStatus(queryRo);// 符合时间段的所有数据库数据
+            List<Grinding_Wheel> lis = grindService.selectTimeWorkHour(queryRo);// 符合时间段的所有数据库数据
             lis = GrindUtil.filterDayWorkingHour(lis);
             LinkedPicInfo picInfo = new LinkedPicInfo();
-            for(Grinding_Wheel wheel:lis){
+            for (Grinding_Wheel wheel : lis) {
                 picInfo.getX().add(wheel.getDhour());
                 picInfo.getY().add(wheel.getDworkinghour());
             }
             dataResult.setData(picInfo);
             dataResult.setCode(200);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
             dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+            dataResult.setError(e.toString());
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
@@ -169,7 +182,7 @@ public class GrindController {
     @RequestMapping(value = "/search_DayShiftByType", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
-    public DataResult searchDayShiftByType(@RequestBody Map map){
+    public DataResult searchDayShiftByType(@RequestBody Map map) {
         QueryRo queryRo = new QueryRo();
         DataResult dataResult = new DataResult();
         ArrayList<Tuple> picinfo = new ArrayList<>();
@@ -178,32 +191,32 @@ public class GrindController {
             String startTime = map.get("start").toString();
             String endTime = map.get("end").toString();
             queryRo.setStartTime(startTime);
-            queryRo.setEndTime(TimeFormat.getNextDateStr(endTime));
+            queryRo.setEndTime(endTime);
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));// 设置表名
 
-            List<Grinding_Wheel> wheels = grindService.slectWheelStatus(queryRo);
-            HashMap<String,List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
-            HashMap<String,Tuple> tupleHashMap = new LinkedHashMap<>();
-            for(String date:infoChild.keySet()){
-                tupleHashMap.put(date,GrindUtil.getDayShift_HourMuchRecords(wheels));
+            List<Grinding_Wheel> wheels = grindService.selectTimeWorkHour(queryRo);
+            HashMap<String, List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
+            HashMap<String, Tuple> tupleHashMap = new LinkedHashMap<>();
+            for (String date : infoChild.keySet()) {
+                tupleHashMap.put(date, GrindUtil.getDayShift_HourMuchRecords(wheels));
             }
             int dayValue = 0;
             int nightValue = 0;
-            for (String key:tupleHashMap.keySet()){
+            for (String key : tupleHashMap.keySet()) {
                 dayValue += Integer.parseInt(tupleHashMap.get(key).getName().toString());
                 nightValue += Integer.parseInt(tupleHashMap.get(key).getValue().toString());
             }
-            picinfo.add(new Tuple("白班",dayValue));
-            picinfo.add(new Tuple("晚班",nightValue));
-            for(String date:tupleHashMap.keySet()){
-                System.out.println(date+"\t"+tupleHashMap.get(date));
+            picinfo.add(new Tuple("白班", dayValue));
+            picinfo.add(new Tuple("晚班", nightValue));
+            for (String date : tupleHashMap.keySet()) {
+                System.out.println(date + "\t" + tupleHashMap.get(date));
             }
             dataResult.setData(picinfo);
             dataResult.setCode(200);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
             dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
@@ -221,9 +234,9 @@ public class GrindController {
         queryRo.setStartTime(request.getParameter("start"));
         queryRo.setEndTime(request.getParameter("end"));
         queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
-        List<Grinding_Wheel> list = this.grindService.slectWheelStatus(queryRo);
+        List<Grinding_Wheel> list = this.grindService.selectTimeWorkHour(queryRo);
         List<Tuple> handleList = new ArrayList<>();
-        switch (label){
+        switch (label) {
             case 0:
                 handleList = GrindUtil.label0(list);
                 break;
@@ -235,7 +248,7 @@ public class GrindController {
         }
         HSSFWorkbook wb = ExportExcel.export(handleList);
         response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-disposition", "attachment;filename="+queryRo.getStartTime()+"-"+queryRo.getEndTime()+".xls");
+        response.setHeader("Content-disposition", "attachment;filename=" + queryRo.getStartTime() + "-" + queryRo.getEndTime() + ".xls");
         OutputStream ouputStream = response.getOutputStream();
         wb.write(ouputStream);
         ouputStream.flush();
@@ -246,7 +259,7 @@ public class GrindController {
     @RequestMapping(value = "/search_Page")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody
-    public DataResult searchPage(@RequestBody Map map){
+    public DataResult searchPage(@RequestBody Map map) {
         DataResult dataResult = new DataResult();
         List info = new ArrayList();
         Map paramap = new HashMap();
@@ -254,26 +267,26 @@ public class GrindController {
         try {
             String startTime = null;
             String hour = null;
-            if(map.get("date")!=null&&map.get("date").toString().trim().length()>0){
+            if (map.get("date") != null && map.get("date").toString().trim().length() > 0) {
                 startTime = map.get("date").toString();//
-                paramap.put("startTime", TimeFormat.strToDate(startTime).toLocaleString().split(" ")[0]);
-                paramap.put("endTime", TimeFormat.getNextDate(startTime).toLocaleString().split(" ")[0]);
-            }else{
-                paramap.put("startTime",null);
+                paramap.put("startTime", startTime);
+                paramap.put("endTime", TimeFormat.getNextDateStr(startTime));
+            } else {
+                paramap.put("startTime", null);
             }
-            if (map.get("hour")!=null&&map.get("hour").toString().trim().length()>0){
-                hour=map.get("hour").toString();
+            if (map.get("hour") != null && map.get("hour").toString().trim().length() > 0) {
+                hour = map.get("hour").toString();
             }
             int type = 1;
             int page = 0;
             int pageSize = 0;
-            if(map.get("type")!=null){
-                type =Integer.parseInt(map.get("type").toString());
+            if (map.get("type") != null) {
+                type = Integer.parseInt(map.get("type").toString());
             }
-            if (map.get("page")!=null){
+            if (map.get("page") != null) {
                 page = Integer.parseInt(map.get("page").toString());
             }
-            if (map.get("pageSize")!=null){
+            if (map.get("pageSize") != null) {
                 pageSize = Integer.parseInt(map.get("pageSize").toString());
             }
             paramap.put("hour", hour);
@@ -282,34 +295,100 @@ public class GrindController {
             paramap.put("table_name", TypeConvertTableName.getTable_Name(type));
             queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
             List<Grinding_Wheel> wheels = grindService.selectWheelPage(paramap);
-//            System.out.println("===="+wheels);
+            //倒置
             wheels = GrindUtil.reverse(wheels);
-//            System.out.println("===="+wheels);
-            List<Grinding_Wheel> wheels1 = GrindUtil.pageSearch(wheels,page,pageSize);
+            List<Grinding_Wheel> wheels1 = GrindUtil.pageSearch(wheels, page, pageSize);
 //            for (Grinding_Wheel wheel:wheels1){
-//                System.out.println("==============="+wheel);
+//                System.out.println("==============="+wheel.getDtime());
 //            }
             for (Grinding_Wheel wheel : wheels1) {
                 info.add(wheel);
             }
             int total = wheels.size();
-//            System.out.println("================"+total);
-//            for (Grinding_Wheel wheel:wheels){
-//                System.out.println("==============="+wheel);
-//            }
             Map infoMap = new HashMap();
-            infoMap.put("list",info);
-            infoMap.put("total",total);
+            infoMap.put("list", info);
+            infoMap.put("total", total);
             dataResult.setCode(200);
             dataResult.setData(infoMap);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             dataResult.setCode(500);
             dataResult.setMsg("没有查找相关的数据");
-        }catch (MyBatisSystemException e){
+        } catch (MyBatisSystemException e) {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
         }
         return dataResult;
     }
 
+    @RequestMapping(value = "/search_TimeAllWorkHour")
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @ResponseBody
+    public DataResult search_TimeAllWorkHour(@RequestBody Map map) {
+        DataResult dataResult = new DataResult();
+        try {
+            QueryRo queryRo = new QueryRo();
+            if (map.get("start") != null && map.get("end") != null) {
+                queryRo.setStartTime(map.get("start").toString());
+                queryRo.setEndTime(map.get("end").toString());
+            }
+            ArrayList<String> table_names = TypeConvertTableName.getAllTableName();
+            LinkedPicInfo linkedPicInfo = new LinkedPicInfo();
+            for (int i = 1; i < table_names.size()+1; i++) {
+                queryRo.setTable_name(TypeConvertTableName.getTable_Name(i));
+                linkedPicInfo.getX().add(i);
+                linkedPicInfo.getY().add(grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
+            }
+            dataResult.setCode(200);
+            dataResult.setData(linkedPicInfo);
+        } catch (NullPointerException e) {
+            dataResult.setCode(500);
+            dataResult.setMsg("没有查找相关的数据");
+        } catch (MyBatisSystemException e) {
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
+        }
+        return dataResult;
+    }
+
+    @RequestMapping(value = "/search_TimeSingleWorkHour")
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @ResponseBody
+    public DataResult search_TimeSingleWorkHour(@RequestBody Map map) {
+        DataResult dataResult = new DataResult();
+        try {
+            QueryRo queryRo = new QueryRo();
+            int type =0;
+            if (map.get("start") != null
+                    && map.get("end") != null
+                        && map.get("type")!=null) {
+                queryRo.setStartTime(map.get("start").toString());
+                queryRo.setEndTime(map.get("end").toString());
+                type = Integer.parseInt(map.get("type").toString());
+                if (type<1||type>8){
+                    dataResult.setMsg("表输入不正确"+":"+type);
+                    dataResult.setCode(500);
+                    return dataResult;
+                }
+            }
+            queryRo.setTable_name(TypeConvertTableName.getTable_Name(type));
+            List<Grinding_Wheel> wheels = grindService.selectTimeWorkHour(queryRo);
+            HashMap<String, List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
+            LinkedPicInfo picInfo = new LinkedPicInfo();
+            for (String key:infoChild.keySet()){
+//                System.out.println("============="+key);
+//                System.out.println(infoChild.get(key).size());
+             picInfo.getX().add(key);
+             picInfo.getY().add(GrindUtil.getDayWorking_HourMuchRecords(infoChild.get(key)));
+            }
+            dataResult.setCode(200);
+            dataResult.setData(picInfo);
+        } catch (NullPointerException e) {
+            dataResult.setCode(500);
+            dataResult.setMsg("没有查找相关的数据");
+        } catch (MyBatisSystemException e) {
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
+        }
+        return dataResult;
+    }
 }

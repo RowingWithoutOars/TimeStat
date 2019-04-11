@@ -56,6 +56,9 @@
     <update id="updateUser" parameterType="Users">
         UPDATE users
         <set>
+            <if test="username!=null">
+                username = #{username},
+            </if>
             <if test="password!=null">
                 password = #{password},
             </if>
@@ -66,7 +69,7 @@
                 role = #{role}
             </if>
         </set>
-        where username = #{username}
+        where userid = #{userid}
     </update>
 
     <!--删除用户-->

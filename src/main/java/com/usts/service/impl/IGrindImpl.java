@@ -56,8 +56,8 @@ public class IGrindImpl implements IGrindService {
     }
 
     @Override
-    public List<Grinding_Wheel> slectWheelStatus(QueryRo queryRo) {
-        return grindDao.slectWheelStatus(queryRo);
+    public List<Grinding_Wheel> selectTimeWorkHour(QueryRo queryRo) {
+        return grindDao.selectTimeWorkHour(queryRo);
     }
 
     @Override
@@ -77,6 +77,7 @@ public class IGrindImpl implements IGrindService {
         return GrindUtil.getDayWorking_HourMuchRecords(wheels);
     }
 
+    // 获取最新的一条的纪录
     public Grinding_Wheel selectDayWorkStatus_Hour_MuchRecords(QueryRo queryRo){
         List<Grinding_Wheel> wheels = grindDao.selectDayWorkHour_Hour_MuchRecords(queryRo);
         Grinding_Wheel wheel = new Grinding_Wheel();
@@ -90,7 +91,8 @@ public class IGrindImpl implements IGrindService {
     @Override
     public int selectAllWorkHour_Hour_MuchRecords(QueryRo queryRo) {
         int allHourWorking = 0;
-        List<Grinding_Wheel> selectResult = grindDao.selectAllWorkHour_Hour_MuchRecords(queryRo);
+        // 此处修改为获取一段时间的总时间
+        List<Grinding_Wheel> selectResult = grindDao.selectTimeWorkHour(queryRo);
         //按日期分开
         HashMap<String,List<Grinding_Wheel>> divByDate = GrindUtil.divByDate(selectResult);
         for(String key:divByDate.keySet()){

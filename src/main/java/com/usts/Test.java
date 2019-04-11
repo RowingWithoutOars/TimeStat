@@ -8,9 +8,12 @@ import com.usts.utils.GrindUtil;
 import com.usts.utils.TimeFormat;
 import com.usts.utils.TypeConvertTableName;
 import org.junit.runner.RunWith;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -44,10 +47,25 @@ public class Test {
 //        add();
 //        xuqiu2();
 //        xuqiu3();
-        Histogram();
+//        Histogram();
 //        xuqiu5();
 //        searchPage();
 //        xuqiu6();
+        Map map = new HashMap();
+        map.put("start","2019-4-3");
+        map.put("end","2019-4-3");
+        QueryRo queryRo = new QueryRo();
+        if (map.get("start") != null && map.get("end") != null) {
+            queryRo.setStartTime(map.get("start").toString());
+            queryRo.setEndTime(TimeFormat.getNextDateStr(map.get("end").toString()));
+        }
+        ArrayList<String> table_names = TypeConvertTableName.getAllTableName();
+        LinkedPicInfo linkedPicInfo = new LinkedPicInfo();
+        for (int i = 0; i < table_names.size(); i++) {
+            queryRo.setTable_name(TypeConvertTableName.getTable_Name(i));
+            linkedPicInfo.getX().add(i);
+            linkedPicInfo.getY().add(grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
+        }
     }
 
     public void xuqiu6(){
@@ -56,7 +74,7 @@ public class Test {
         queryRo.setStartTime("2025-3-31");
         queryRo.setEndTime("2025-4-2");
         queryRo.setTable_name(TypeConvertTableName.getTable_Name(1));
-        List<Grinding_Wheel> wheels = grindDao.slectWheelStatus(queryRo);//查询时间段内的数据
+        List<Grinding_Wheel> wheels = grindDao.selectTimeWorkHour(queryRo);//查询时间段内的数据
         label1(wheels);
 
     }
@@ -91,7 +109,7 @@ public class Test {
         Map paramap = new HashMap();
         paramap.put("date","2025-4-01");
         paramap.put("startTime",TimeFormat.strToDate("2025-04-01").toLocaleString().split(" ")[0]);
-        paramap.put("endTime",TimeFormat.getNextDate("2025-04-05").toLocaleString().split(" ")[0]);
+        paramap.put("endTime",TimeFormat.getNextDateStr("2025-04-05"));
         paramap.put("hour",18);
         int type=1;
         paramap.put("page",1);
@@ -112,7 +130,7 @@ public class Test {
         queryRo.setTable_name(TypeConvertTableName.getTable_Name(1));// 设置表名
         queryRo.setStartTime(startTime);
         queryRo.setEndTime(endTime);
-        List<Grinding_Wheel> wheels = grindDao.slectWheelStatus(queryRo);
+        List<Grinding_Wheel> wheels = grindDao.selectTimeWorkHour(queryRo);
         HashMap<String,List<Grinding_Wheel>> infoChild = GrindUtil.divByDate(wheels);
         System.out.println("==========="+wheels.size()+"\t"+infoChild.size());
         HashMap<String,Tuple> tupleHashMap = new LinkedHashMap<>();
@@ -134,18 +152,43 @@ public class Test {
     private IGrindService grindService;
 
     public void xuqiu3(){
+        Map<String,WheelStatus> info = new HashMap();
         QueryRo queryRo = new QueryRo();
-        ArrayList<String> table_name = TypeConvertTableName.getAllTableName();
-        HashMap<String,Grinding_Wheel> status = new LinkedHashMap<>();
-        HashMap<String,Integer> allTime = new LinkedHashMap<>();
-        HashMap<String,Integer> dayTime = new LinkedHashMap<>();
-        Map<String,List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
-        HashMap info = new HashMap();
+        DataResult dataResult = new DataResult();
+        queryRo.setStartTime("2019-4-1");
+        queryRo.setEndTime("2019-4-8");
+        try {
+            ArrayList<String> table_name = TypeConvertTableName.getAllTableName();
+            HashMap<String, Grinding_Wheel> status = new LinkedHashMap<>();
+            HashMap<String, Integer> allTime = new LinkedHashMap<>();
+            HashMap<String, Integer> dayTime = new LinkedHashMap<>();
+            Map<String,List<Grinding_Wheel>> status_new = new LinkedHashMap<>();
 
-        for(String key:status.keySet()){//输出八个设备的当前工作状态
-            System.out.println(status.get(key).getDstating()+"\t"+GrindUtil.isWorkingOff(status_new.get(key)));
-            System.out.println("设备名："+key+"\t 设备状态： "+status.get(key).getDstating()
-                    +"\t 设备总工作时间："+allTime.get(key)+"\t 当天工作时间："+dayTime.get(key)+"\t 当前小时工作时间"+status.get(key).getDworkinghour());
+//            for (String name : table_name) {
+//                queryRo.setTable_name(name);// 设置表名
+//                status_new.put(name,grindService.selectStatusLastF(queryRo));
+//                Grinding_Wheel status_New = grindService.selectDayWorkStatus_Hour_MuchRecords(queryRo);
+//                status.put(name, status_New);
+//                allTime.put(name, grindService.selectAllWorkHour_Hour_MuchRecords(queryRo));
+//                dayTime.put(name, grindService.selectDayWorkHour_Hour_MuchRecords(queryRo));
+//            }
+//            for (String key : status.keySet()) {//输出八个设备的当前工作状态
+//                WheelStatus wheelStatus = new WheelStatus();
+//                wheelStatus.setStatus(GrindUtil.isWorkingOff(status_new.get(key)));// 设备状态
+//                wheelStatus.setAll_work(allTime.get(key));// 设备
+//                wheelStatus.setCurrent_day_work(dayTime.get(key));
+//                wheelStatus.setCurrent_hour_work(status.get(key).getDworkinghour());
+//                info.put(key, wheelStatus);
+//            }
+            dataResult.setData(info);
+            dataResult.setCode(200);
+        }catch (NullPointerException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("没有查找相关的数据");
+            dataResult.setError(e.toString());
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setMsg("数据库连接异常");
         }
     }
 
@@ -157,7 +200,7 @@ public class Test {
         String endTime = "2019-4-1 00:00:00";
         queryRo.setStartTime(startTime);
         queryRo.setEndTime(endTime);
-        List<Grinding_Wheel> wheels = grindDao.slectWheelStatus(queryRo);
+        List<Grinding_Wheel> wheels = grindDao.selectTimeWorkHour(queryRo);
         Grinding_Wheel wheel = GrindUtil.getHourWorkig(wheels,17);
         System.out.println(wheel.toString());
     }
@@ -170,7 +213,7 @@ public class Test {
         String endTime = "2019-4-5";
         queryRo.setStartTime(startTime);
         queryRo.setEndTime(endTime);
-        List<Grinding_Wheel> lis = grindDao.slectWheelStatus(queryRo);
+        List<Grinding_Wheel> lis = grindDao.selectTimeWorkHour(queryRo);
         HashMap<String,Integer> info = GrindUtil.getHistogramInfo(lis);
         for(String s : info.keySet()){
             System.out.println("dtime: "+s+"\t dworkighour："+info.get(s));

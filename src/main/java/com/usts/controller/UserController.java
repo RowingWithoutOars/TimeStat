@@ -1,7 +1,9 @@
 package com.usts.controller;
 
 import com.usts.model.DataResult;
+import com.usts.model.Device;
 import com.usts.model.Users;
+import com.usts.service.IDeviceService;
 import com.usts.service.IUserService;
 import com.usts.utils.MapConvertObject;
 import org.mybatis.spring.MyBatisSystemException;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.net.ConnectException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,8 @@ public class UserController {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IDeviceService deviceService;
 
     // 登录接口
     @RequestMapping(value = "/login", produces = "application/json; charset=utf-8")
@@ -31,11 +36,15 @@ public class UserController {
         DataResult dataResult = new DataResult();
 
         Users users = MapConvertObject.mapConverTUser(map);
+        List<Device> devices = deviceService.listDevice();
         try {
             Users tmp = this.userService.selectUser(users);
             if (tmp!=null&&users.getUsername().equals(tmp.getUsername())&&
                     users.getPassword().equals(tmp.getPassword())){
-                dataResult.setData(tmp);
+                Map m = new HashMap();
+                m.put("user",tmp);
+                m.put("device",devices);
+                dataResult.setData(m);
                 dataResult.setCode(200);
             }else{
                 dataResult.setCode(500);
@@ -72,6 +81,7 @@ public class UserController {
             dataResult.setCode(500);
             dataResult.setMsg("数据库连接异常");
             dataResult.setData(false);
+            dataResult.setError(e.toString());
         }
         return dataResult;
     }
@@ -118,7 +128,7 @@ public class UserController {
         return dataResult;
     }
 
-    // 删除用户
+    // 显示所有用户
     @RequestMapping(value = "/listUser", produces = "application/json; charset=utf-8")
     @CrossOrigin(origins = "*", maxAge = 3600)
     @ResponseBody

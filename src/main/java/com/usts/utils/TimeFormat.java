@@ -32,6 +32,12 @@ public class TimeFormat {
     //得到下一天，字符串形式
     public static String getNextDateStr(String startTime){
         Date nextDate = getNextDate(startTime);
-        return nextDate.toLocaleString().split(" ")[0];
+        return getFormatTime(nextDate);
+    }
+
+    public static String getFormatTime(Date date){
+        SimpleDateFormat myFmt2=new SimpleDateFormat("yyyy-MM-dd");
+        return myFmt2.format(date);
     }
 }
+

@@ -32,8 +32,10 @@
         select * from ${table_name}
     </select>
 
-    <!--柱状图统计-->
-    <select id="slectWheelStatus" parameterType="QueryRo" resultType="Grinding_Wheel">
+    <!--获取一个时间内的所有纪录
+        1、需求2修改为获取一段时间的总工作时间
+        2、柱状图统计-->
+    <select id="selectTimeWorkHour" parameterType="QueryRo" resultType="Grinding_Wheel">
         select * from ${table_name} where
         dtime between #{startTime} and #{endTime}
     </select>

@@ -80,8 +80,9 @@ public class IGrindImpl implements IGrindService {
     // 获取最新的一条的纪录
     public Grinding_Wheel selectDayWorkStatus_Hour_MuchRecords(QueryRo queryRo){
         List<Grinding_Wheel> wheels = grindDao.selectDayWorkHour_Hour_MuchRecords(queryRo);
+        System.out.println("==1=="+wheels.size());
         Grinding_Wheel wheel = new Grinding_Wheel();
-        if (wheels.isEmpty()&&wheels.size()>0){
+        if (wheels!=null&&wheels.size()>0){
             wheel = wheels.get(wheels.size()-1);
         }
         return wheel;

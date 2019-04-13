@@ -76,6 +76,20 @@ public class GrindUtil {
         return info;
     }
 
+    public static HashMap<String,List<Grinding_Wheel>> divByDateAndEn(List<Grinding_Wheel> wheels){
+        HashMap<String,List<Grinding_Wheel>> info = new LinkedHashMap();
+        for (Grinding_Wheel wheel:wheels){
+            String date = TimeFormat.isWorkDay(wheel.getDtime());
+            if (info.get(date)!=null){
+                info.get(date).add(wheel);
+            }else{
+                info.put(date,new ArrayList<Grinding_Wheel>());
+                info.get(date).add(wheel);
+            }
+        }
+        return info;
+    }
+
     // 统计一天白班和晚班的工作时长
 
     /**统计一天白班和晚班的时长
@@ -88,7 +102,7 @@ public class GrindUtil {
         int nightShift = 0;
         for (Grinding_Wheel wheel:list){
             if (wheel.getDtime().getHours()>=8&&
-                    wheel.getDtime().getHours()<=20){
+                    wheel.getDtime().getHours()<20){
                 dayShift += wheel.getDworkinghour();
             }else{
                 nightShift+= wheel.getDworkinghour();
@@ -306,9 +320,16 @@ public class GrindUtil {
     }
 
     public static int isWorkingOff(List<Grinding_Wheel> wheels){
+        System.out.println("========================================================");
+        System.out.println(wheels);
+        System.out.println("========================================================");
         if (wheels.isEmpty()){
             return 1;
         }
+        //最后一天纪录是不是此时此刻的。
+//        if (wheels.get(wheels.size()-1).getDworkinghour()!=1){
+//
+//        }
         boolean flag = true;
         for(int i =0;i<wheels.size()-1;i++){
             if (wheels.get(i).getDworkinghour()!=wheels.get(i+1).getDworkinghour()){

@@ -28,7 +28,14 @@ public class QueryRo {
     }
 
     public void setStartTime(String startTime) {
-        this.startTime = startTime;
+        this.startTime = TimeFormat.getNextDateStr(TimeFormat.getDateIgnoreUTC(startTime))+" 00:00:00";
+    }
+
+    public void setStartTime(String startTime,String append) {
+        this.startTime = TimeFormat.getNextDateStr(TimeFormat.getDateIgnoreUTC(startTime))+" "+append;
+    }
+    public void setEndTime(String endTime,String append) {
+        this.endTime = TimeFormat.getFormatTime(TimeFormat.getNDate(TimeFormat.getDateIgnoreUTC(endTime),2))+" "+append;
     }
 
     public String getEndTime() {
@@ -36,8 +43,7 @@ public class QueryRo {
     }
 
     public void setEndTime(String endTime) {
-
-        this.endTime = TimeFormat.getNextDateStr(endTime);
+        this.endTime = TimeFormat.getNextDateStr(TimeFormat.getDateIgnoreUTC(endTime))+" 23:59:59";
     }
 
     @Override

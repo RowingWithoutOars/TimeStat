@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.usts.dao.IDeviceDao">
+    <!--列出用户信息-->
+    <select id="listDevice" resultType="Device">
+        SELECT * FROM device
+    </select>
+
+    <select id="selectDevice" parameterType="Device" resultType="Device">
+        SELECT * FROM device where
+        <if test="device_name!=null">
+            device_name = #{device_table}
+        </if>
+    </select>
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="device_name!=null">
+                device_name,
+            </if>
+            <if test="device_table!=null">
+                device_table,
+            </if>
+            <if test="device_num!=null">
+                device_num,
+            </if>
+            <if test="device_status!=null">
+                device_status,
+            </if>
+        </trim>
+    </sql>
+    <sql id="value">
+        <trim suffixOverrides=",">
+            <if test="device_name!=null">
+                #{device_name},
+            </if>
+            <if test="device_table!=null">
+                #{device_table},
+            </if>
+            <if test="device_num!=null">
+                #{device_num},
+            </if>
+            <if test="device_status!=null">
+                #{device_status},
+            </if>
+        </trim>
+    </sql>
+    <insert id="addDevice" parameterType="Device">
+        INSERT INTO device(<include refid="key"/>)
+        values (<include refid="value"/>)
+    </insert>
+    <update id="updateDevice" parameterType="Device">
+        UPDATE device
+        <set>
+            <if test="device_name!=null">
+                device_name = #{device_name},
+            </if>
+            <if test="device_table!=null">
+                device_table = #{device_table},
+            </if>
+            <if test="device_num!=null">
+                device_num = #{device_num},
+            </if>
+            <if test="device_status!=null">
+                device_status = #{device_status}
+            </if>
+        </set>
+        where deviceid = #{deviceid}
+    </update>
+
+    <!--删除设备-->
+    <delete id="deleteDevice" parameterType="Device">
+        delete from device where deviceid = #{deviceid}
+    </delete>
+</mapper>

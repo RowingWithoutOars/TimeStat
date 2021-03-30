@@ -295,8 +295,10 @@ public class GrindUtil {
     public static List<Grinding_Wheel> pageSearch(List<Grinding_Wheel> wheels,int page,int pageSize){
         // 去掉重复纪录
         wheels = removeDuplicate(wheels);
+        System.out.println("wheels: "+wheels.size());
         // 获取单个小时的最大值
         wheels = filterAllWorkingHour(wheels);
+//        System.out.println("wheels2: "+wheels.size());
         List<Grinding_Wheel> records = new ArrayList<>();
         if (wheels!=null){
             int size = wheels.size();
@@ -310,6 +312,33 @@ public class GrindUtil {
             }
         }
         return records;
+    }
+
+    public static HashMap<String,Object> pageSearchTotal(List<Grinding_Wheel> wheels,int page,int pageSize){
+        // 去掉重复纪录
+        HashMap<String,Object> tuple = new HashMap<>();
+        wheels = removeDuplicate(wheels);
+        System.out.println("wheels: "+wheels.size());
+        // 获取单个小时的最大值
+        wheels = filterAllWorkingHour(wheels);
+//        System.out.println("wheels2: "+wheels.size());
+        List<Grinding_Wheel> records = new ArrayList<>();
+        int total = wheels.size();
+        tuple.put("total",total);
+        if (wheels!=null){
+            int size = wheels.size();
+            if(size>page*pageSize) {
+                records = wheels.subList((page-1)* pageSize, page* pageSize);
+            }
+            else if(size<=page*pageSize&&size>(page-1) * pageSize){
+                records = wheels.subList((page-1) * pageSize, size);
+            }else{
+                tuple.put("wheels",wheels);
+                return tuple;
+            }
+        }
+        tuple.put("wheels",records);
+        return tuple;
     }
 
     public static List removeDuplicate(List list) {

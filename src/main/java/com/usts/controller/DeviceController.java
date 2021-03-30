@@ -2,6 +2,9 @@ package com.usts.controller;
 
 import com.usts.model.DataResult;
 import com.usts.model.Device;
+import com.usts.model.DeviceStatus;
+import com.usts.model.QueryRo;
+import com.usts.service.IDSService;
 import com.usts.service.IDeviceService;
 import com.usts.utils.MapConvertObject;
 import org.mybatis.spring.MyBatisSystemException;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +110,32 @@ public class DeviceController {
         deviceService.deleteDevice(device);
         dataResult.setCode(200);
         dataResult.setMsg("删除成功");
+        return dataResult;
+    }
+
+    @Autowired
+    private IDSService idsService;
+
+    // 获取设备状态
+    @RequestMapping(value = "/getDeviceWorkStatus", produces = "application/json; charset=utf-8")
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @ResponseBody
+    public DataResult getDeviceWorkStatus(){
+        DataResult dataResult = new DataResult();
+        try {
+            List<DeviceStatus> deviceStatuses= new ArrayList<>();
+            QueryRo queryRo = new QueryRo();
+            for(int i=1; i <=12; i++){
+                 queryRo.setTable_name("device"+i+"_state");
+                 DeviceStatus ds = idsService.getDeviceStatus(queryRo);
+                 deviceStatuses.add(ds);
+            }
+            dataResult.setCode(200);
+            dataResult.setData(deviceStatuses);
+        }catch (MyBatisSystemException e){
+            dataResult.setCode(500);
+            dataResult.setData("数据库异常");
+        }
         return dataResult;
     }
 }

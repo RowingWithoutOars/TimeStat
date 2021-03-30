@@ -2,7 +2,9 @@ package com.usts.controller;
 
 import com.usts.model.DataResult;
 import com.usts.model.Device;
+import com.usts.model.DeviceManage;
 import com.usts.model.Users;
+import com.usts.service.IDManageService;
 import com.usts.service.IDeviceService;
 import com.usts.service.IUserService;
 import com.usts.utils.MapConvertObject;
@@ -25,8 +27,10 @@ public class UserController {
 
     @Autowired
     private IUserService userService;
+//    @Autowired
+//    private IDeviceService deviceService;
     @Autowired
-    private IDeviceService deviceService;
+    private IDManageService idManageService;
 
     // 登录接口
     @RequestMapping(value = "/login", produces = "application/json; charset=utf-8")
@@ -34,15 +38,15 @@ public class UserController {
     @ResponseBody
     public DataResult login(@RequestBody Map map) {
         DataResult dataResult = new DataResult();
-
         Users users = MapConvertObject.mapConverTUser(map);
-        List<Device> devices = deviceService.listDevice();
+        System.out.println(map);
         try {
             Users tmp = this.userService.selectUser(users);
             if (tmp!=null&&users.getUsername().equals(tmp.getUsername())&&
                     users.getPassword().equals(tmp.getPassword())){
                 Map m = new HashMap();
                 m.put("user",tmp);
+                List<DeviceManage> devices = idManageService.listDevice();
                 m.put("device",devices);
                 dataResult.setData(m);
                 dataResult.setCode(200);

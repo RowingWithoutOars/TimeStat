@@ -1,9 +1,9 @@
 package com.usts.utils;
 
-import com.usts.model.Device;
-import com.usts.model.QueryRo;
-import com.usts.model.Users;
+import com.usts.model.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MapConvertObject {
@@ -47,4 +47,59 @@ public class MapConvertObject {
         }
         return device;
     }
+
+    public static DeviceManage mapConverTDM(Map map){
+        DeviceManage deviceManage = new DeviceManage();
+        if(map.get("deviceid")!=null){
+            deviceManage.setDeviceid(Integer.parseInt(map.get("deviceid").toString()));
+        }
+        if(map.get("dname")!=null){
+            deviceManage.setDname(map.get("dname").toString());
+        }
+        return deviceManage;
+    }
+
+    public static PassageWay mapConverTPW(Map map){
+        PassageWay passageWay = new PassageWay();
+        if(map.get("deviceid")!=null){
+            passageWay.setDeviceid(Integer.parseInt(map.get("deviceid").toString()));
+        }
+        if(map.get("dnumid")!=null){
+            passageWay.setDnumid(Integer.parseInt(map.get("dnumid").toString()));
+        }
+        if(map.get("dname")!=null){
+            passageWay.setDname(map.get("dname").toString());
+        }
+        return passageWay;
+    }
+
+    public static Labels mapConverTLabel(Map map){
+        Labels labels = new Labels();
+        if(map.get("labelid")!=null){
+            labels.setLabelid(Integer.parseInt(map.get("labelid").toString()));
+        }
+        if (map.get("name")!=null){
+            labels.setName(map.get("name").toString());
+        }
+        return labels;
+    }
+
+    public static Relations mapConverTRelation(Map map){
+        Relations relations = new Relations();
+        if(map.get("reid")!=null){
+            relations.setReid(Integer.parseInt(map.get("reid").toString()));
+        }
+        if(map.get("deviceid")!=null){
+            relations.setDeviceid(Integer.parseInt(map.get("deviceid").toString()));
+        }
+        if(map.get("dnumid")!=null){
+            relations.setDnumid(Integer.parseInt(map.get("dnumid").toString()));
+        }
+        if(map.get("labelid")!=null){
+            relations.setLabelid(Integer.parseInt(map.get("labelid").toString()));
+        }
+        return relations;
+    }
+
+
 }

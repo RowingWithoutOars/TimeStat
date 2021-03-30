@@ -5,6 +5,9 @@ public class WheelStatus {
     private Integer all_work;// 总的工作时间
     private Integer current_day_work;// 当天工作时间
     private Integer current_hour_work;// 当前小时工作时间
+    private Integer deviceid;
+    private Integer dnumid;
+    private String dname;
 
     public WheelStatus() {
     }
@@ -39,5 +42,29 @@ public class WheelStatus {
 
     public void setCurrent_hour_work(Integer current_hour_work) {
         this.current_hour_work = current_hour_work;
+    }
+
+    public Integer getDeviceid() {
+        return deviceid;
+    }
+
+    public void setDeviceid(Integer deviceid) {
+        this.deviceid = deviceid;
+    }
+
+    public Integer getDnumid() {
+        return dnumid;
+    }
+
+    public void setDnumid(Integer dnumid) {
+        this.dnumid = dnumid;
+    }
+
+    public String getDname() {
+        return dname;
+    }
+
+    public void setDname(String dname) {
+        this.dname = dname;
     }
 }
